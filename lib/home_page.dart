@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'claude_service.dart';
@@ -12,29 +12,40 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  File? _image;
-  String? _description; // Fixed typo
+  dynamic _image; // Changed from File? to dynamic to handle both web and mobile
+  String? _description;
   bool _isLoading = false;
   final _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
     try {
+      print('Starting image pick from ${source.name}');
       final pickedFile = await _picker.pickImage(
         source: source,
         maxHeight: 1080,
         maxWidth: 1920,
         imageQuality: 85,
+        preferredCameraDevice: CameraDevice.rear,
       );
       if (pickedFile != null) {
+        print('Image picked successfully: ${pickedFile.path}');
         setState(() {
-          _image = File(pickedFile.path);
+          _image = kIsWeb ? pickedFile : File(pickedFile.path);
           _isLoading = true;
         });
+        await _analyzeImage();
       } else {
         print('No image selected.');
       }
     } catch (e) {
       print('Error picking image: $e');
+      setState(() {
+        _isLoading = false;
+      });
+      // Show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error picking image: $e')),
+      );
     }
   }
 
@@ -44,17 +55,22 @@ class _HomePageState extends State<HomePage> {
       _isLoading = true;
     });
     try {
-      final description = await ClaudeService().analyzeImage(_image!);
+      print('Starting image analysis');
+      final description = await ClaudeService().analyzeImage(_image);
+      print('Analysis completed successfully');
       setState(() {
-        _description = description; // Fixed typo
+        _description = description;
         _isLoading = false;
       });
     } catch (e) {
       print('Error analyzing image: $e');
-    } finally {
       setState(() {
         _isLoading = false;
       });
+      // Show error to user
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error analyzing image: $e')),
+      );
     }
   }
 
@@ -65,44 +81,64 @@ class _HomePageState extends State<HomePage> {
         title: const Text('Medical Snap'),
         centerTitle: true,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            height: 300,
-            width: 300,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: _image != null
-                ? Image.file(_image!)
-                : const Center(child: Text('Choose an image')),
-          ),
-          // Buttons to pick image from gallery or camera
-          Row(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              ElevatedButton(
-                onPressed: () => _pickImage(ImageSource.camera),
-                child: const Text('Take Photo'),
+              Container(
+                height: 300,
+                width: 300,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: _image != null
+                    ? kIsWeb
+                        ? Image.network(_image.path)
+                        : Image.file(_image)
+                    : const Center(child: Text('Choose an image')),
               ),
-              const SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () => _pickImage(ImageSource.gallery),
-                child: const Text('Pick from Gallery'),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () => _pickImage(ImageSource.camera),
+                    child: const Text('Take Photo'),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: () => _pickImage(ImageSource.gallery),
+                    child: const Text('Pick from Gallery'),
+                  ),
+                ],
               ),
+              const SizedBox(height: 25),
+              if (_isLoading)
+                Column(
+                  children: [
+                    const CircularProgressIndicator(),
+                    const SizedBox(height: 10),
+                    const Text('Analyzing image...'),
+                  ],
+                )
+              else if (_description != null)
+                Container(
+                  padding: const EdgeInsets.all(16.0),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    _description!,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ),
             ],
           ),
-
-          const SizedBox(height: 25),
-
-          // Analyze & description of the image
-          if (_isLoading)
-            const CircularProgressIndicator()
-          else if (_description != null)
-            Text(_description!), // Fixed typo
-        ],
+        ),
       ),
     );
   }
