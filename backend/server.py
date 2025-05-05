@@ -24,11 +24,7 @@ print(f"Local IP address: {LOCAL_IP}")
 # Configure CORS with specific origins
 CORS(app, resources={
     r"/*": {
-        "origins": [
-            f"http://{LOCAL_IP}:8000",
-            "http://localhost:8000",
-            "http://127.0.0.1:8000"
-        ],
+        "origins": "*",  # Allow all origins during development
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Accept"],
         "supports_credentials": True
