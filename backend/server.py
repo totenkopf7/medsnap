@@ -38,12 +38,7 @@ def test():
     return jsonify({
         'status': 'Server is running',
         'message': 'You can now send image analysis requests',
-        'server_ip': LOCAL_IP,
-        'allowed_origins': [
-            f"http://{LOCAL_IP}:8000",
-            "http://localhost:8000",
-            "http://127.0.0.1:8000"
-        ]
+        'server_ip': LOCAL_IP
     })
 
 @app.route('/analyze', methods=['POST', 'OPTIONS'])
@@ -128,4 +123,13 @@ if __name__ == '__main__':
     print("Server starting...")
     print(f"Test the server at: http://{LOCAL_IP}:3000/test")
     print("Make sure to run Flutter web app on port 8000")
-    app.run(host='0.0.0.0', port=3000, debug=True) 
+    try:
+        app.run(host='0.0.0.0', port=3000, debug=True)
+    except OSError as e:
+        print(f"Failed to start server on port 3000: {e}")
+        print("Trying alternative port 3001...")
+        try:
+            app.run(host='0.0.0.0', port=3001, debug=True)
+        except OSError as e:
+            print(f"Failed to start server on port 3001: {e}")
+            print("Please check if any other application is using these ports.") 
