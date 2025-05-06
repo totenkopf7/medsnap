@@ -23,8 +23,8 @@ print(f"Local IP address: {LOCAL_IP}")
 
 # Configure CORS with specific origins
 CORS(app, resources={
-    r"/*": {
-        "origins": "*",  # Allow all origins during development
+      r"/analyze": {
+        "origins": ["https://medsnap.help", "https://www.medsnap.help"],
         "methods": ["GET", "POST", "OPTIONS"],
         "allow_headers": ["Content-Type", "Accept"],
         "supports_credentials": True
