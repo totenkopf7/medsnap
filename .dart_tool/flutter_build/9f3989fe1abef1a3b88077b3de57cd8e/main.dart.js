@@ -63334,8 +63334,8 @@ return A.T(n.zP(),$async$nv)
 case 7:m=c
 e=B.id.gjZ().c_(m)
 A.dw("Web image converted to base64, length: "+J.bc(e))
-A.dw("Sending request to local server at https://api.medsnap.help/analyze")
-i=A.fX("https://api.medsnap.help/analyze")
+A.dw("Sending request to local server at http://16.16.212.44:3000/analyze")
+i=A.fX("http://16.16.212.44:3000/analyze")
 h=t.N
 g=A.aH(["Content-Type","application/json","Accept","application/json"],h,h)
 s=8

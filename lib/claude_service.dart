@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 class ClaudeService {
   // Use AWS instance IP for web development
   final String _baseUrl = kIsWeb
-      ? 'https://api.medsnap.help/analyze'
+      ? 'http://16.16.212.44:3000/analyze' //'https://api.medsnap.help/analyze'
       : 'https://api.anthropic.com/v1/messages';
 
   Future<String> analyzeImage(dynamic image) async {
