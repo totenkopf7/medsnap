@@ -26,7 +26,16 @@ dev_dependencies:
 
 
 flutter:
-
   uses-material-design: true
-  assets: []
+  assets:
+    - lib/assets/fonts/  # optional if only used for fonts
+
+  fonts:
+    - family: KurdiFont
+      fonts:
+        - asset: lib/assets/fonts/kurdi.ttf
+
+    - family: Noto
+      fonts:
+        - asset: lib/assets/fonts/NotoSansArabic.ttf
 

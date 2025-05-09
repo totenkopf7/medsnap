@@ -5,9 +5,9 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class ClaudeService {
-  // Use AWS instance IP for web development
+  // Use the local IP address for web development
   final String _baseUrl = kIsWeb
-      ? 'http://16.16.212.44:3000/analyze' //'https://api.medsnap.help/analyze'
+      ? 'https://api.medsnap.help/analyze' //AWS-EC2-IP
       : 'https://api.anthropic.com/v1/messages';
 
   Future<String> analyzeImage(dynamic image) async {
@@ -88,8 +88,25 @@ class ClaudeService {
                   },
                   {
                     'type': 'text',
-                    'text':
-                        'Analyze this medicine, give benefits in points and give usage (how and when to take) and at the end give some side effects.'
+                    'text': """
+‼️ **CRITICAL INSTRUCTION**: YOU MUST RESPOND **ONLY IN KURDISH BADINI (ARABIC SCRIPT)**. 
+IF YOU USE ENGLISH OR LATIN CHARACTERS, THE APP WILL FAIL.
+
+📌 **Response Rules**:
+- Language: **ONLY Kurdish Badini (Arabic script)**  
+- Format: Follow the **exact structure** below:
+  - Start with: "ئەم دەرمانە باشە بۆ..."
+  - Use **bullet points (•)** for lists
+  - Never translate Kurdish terms to English
+
+📝 **Example of VALID Response**:
+ئەم دەرمانە باشە بۆ...
+• سوود: ...
+• شێوازێ بکارئینانێ: ...
+• کاریگەریێن لادەر: ...
+
+🚫 **Invalid**: English, Latin script, mixed languages.
+"""
                   }
                 ],
               }

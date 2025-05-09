@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 25),
               if (_isLoading)
-                Column(
+                const Column(
                   children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 10),
-                    const Text('Analyzing image...'),
+                    CircularProgressIndicator(),
+                    SizedBox(height: 10),
+                    Text('Analyzing image...'),
                   ],
                 )
               else if (_description != null)
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   child: Text(
                     _description!,
-                    style: const TextStyle(fontSize: 16),
+                    style: const TextStyle(fontSize: 16, fontFamily: 'Noto'),
                   ),
                 ),
             ],
