@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
-//git push
+
 void main() {
   runApp(const MyApp());
 }
