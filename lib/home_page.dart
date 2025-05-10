@@ -77,9 +77,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[900],
       appBar: AppBar(
         title: const Text('Medical Snap'),
         centerTitle: true,
+        backgroundColor: const Color.fromARGB(255, 202, 98, 66),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -98,18 +100,29 @@ class _HomePageState extends State<HomePage> {
                     ? kIsWeb
                         ? Image.network(_image.path)
                         : Image.file(_image)
-                    : const Center(child: Text('Choose an image')),
+                    : const Center(
+                        child: Text(
+                        'Choose an image',
+                        style:
+                            TextStyle(color: Color.fromARGB(255, 202, 98, 66)),
+                      )),
               ),
               const SizedBox(height: 20),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 202, 98, 66),
+                    ),
                     onPressed: () => _pickImage(ImageSource.camera),
                     child: const Text('Take Photo'),
                   ),
                   const SizedBox(width: 10),
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 202, 98, 66),
+                    ),
                     onPressed: () => _pickImage(ImageSource.gallery),
                     child: const Text('Pick from Gallery'),
                   ),
@@ -121,19 +134,25 @@ class _HomePageState extends State<HomePage> {
                   children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 10),
-                    Text('Analyzing image...'),
+                    Text(
+                      'Analyzing image...',
+                      style: TextStyle(color: Color.fromARGB(255, 202, 98, 66)),
+                    ),
                   ],
                 )
               else if (_description != null)
                 Container(
                   padding: const EdgeInsets.all(16.0),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: Colors.grey[900],
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
                     _description!,
-                    style: const TextStyle(fontSize: 16, fontFamily: 'Noto'),
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontFamily: 'Noto',
+                        color: Color.fromARGB(255, 202, 98, 66)),
                   ),
                 ),
             ],

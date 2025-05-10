@@ -9,6 +9,10 @@
 .history
 .svn/
 migrate_working_dir/
+build/
+.dart_tool/
+*.apk
+
 
 # IntelliJ related
 *.iml
