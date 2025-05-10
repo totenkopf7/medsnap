@@ -18,6 +18,9 @@ jobs:
         with:
           flutter-version: "3.19.0"
 
+      - name: Confirm Flutter install
+        run: flutter --version
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -30,5 +33,5 @@ jobs:
           git config --global user.name "GitHub Actions"
           git checkout --orphan vercel-deploy
           git --work-tree build/web add --all
-          git --work-tree build/web commit -m "Deploy to Vercel"
+          git --work-tree build/web commit -m "Deployed to vercel-deploy"
           git push origin HEAD:vercel-deploy --force
