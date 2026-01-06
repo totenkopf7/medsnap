@@ -12,14 +12,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  dynamic _image; // Changed from File? to dynamic to handle both web and mobile
+  dynamic _image;
   String? _description;
   bool _isLoading = false;
   final _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
     try {
-      print('Starting image pick from ${source.name}');
       final pickedFile = await _picker.pickImage(
         source: source,
         maxHeight: 1080,
@@ -28,48 +27,36 @@ class _HomePageState extends State<HomePage> {
         preferredCameraDevice: CameraDevice.rear,
       );
       if (pickedFile != null) {
-        print('Image picked successfully: ${pickedFile.path}');
         setState(() {
           _image = kIsWeb ? pickedFile : File(pickedFile.path);
           _isLoading = true;
         });
         await _analyzeImage();
-      } else {
-        print('No image selected.');
       }
     } catch (e) {
-      print('Error picking image: $e');
       setState(() {
         _isLoading = false;
       });
-      // Show error to user
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error picking image: $e')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
 
   Future<void> _analyzeImage() async {
     if (_image == null) return;
-    setState(() {
-      _isLoading = true;
-    });
     try {
-      print('Starting image analysis');
       final description = await ClaudeService().analyzeImage(_image);
-      print('Analysis completed successfully');
       setState(() {
         _description = description;
         _isLoading = false;
       });
     } catch (e) {
-      print('Error analyzing image: $e');
       setState(() {
         _isLoading = false;
       });
-      // Show error to user
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error analyzing image: $e')),
+        SnackBar(content: Text('Error: $e')),
       );
     }
   }
@@ -77,87 +64,227 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('Medical Snap'),
+        title: const Text(
+          'Medical Snap',
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 202, 98, 66),
+        backgroundColor: Color(0xFF2E7D32), // Professional medical green
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(20.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                height: 300,
-                width: 300,
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10),
+              // Image Preview Card
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: _image != null
-                    ? kIsWeb
-                        ? Image.network(_image.path)
-                        : Image.file(_image)
-                    : const Center(
-                        child: Text(
-                        'Choose an image',
-                        style:
-                            TextStyle(color: Color.fromARGB(255, 202, 98, 66)),
-                      )),
+                child: Container(
+                  width: double.infinity,
+                  height: 300,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    color: Colors.grey[50],
+                  ),
+                  child: _image != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: kIsWeb
+                              ? Image.network(_image.path, fit: BoxFit.cover)
+                              : Image.file(_image, fit: BoxFit.cover),
+                        )
+                      : Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 64,
+                                color: Colors.grey[400],
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                'No image selected',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                ),
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 24),
+
+              // Action Buttons
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 202, 98, 66),
-                    ),
+                  _buildActionButton(
+                    icon: Icons.camera_alt,
+                    label: 'Camera',
                     onPressed: () => _pickImage(ImageSource.camera),
-                    child: const Text('Take Photo'),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 202, 98, 66),
-                    ),
+                  const SizedBox(width: 16),
+                  _buildActionButton(
+                    icon: Icons.photo_library,
+                    label: 'Gallery',
                     onPressed: () => _pickImage(ImageSource.gallery),
-                    child: const Text('Pick from Gallery'),
                   ),
                 ],
               ),
-              const SizedBox(height: 25),
+
+              const SizedBox(height: 32),
+
+              // Loading Indicator
               if (_isLoading)
-                const Column(
+                Column(
                   children: [
-                    CircularProgressIndicator(),
-                    SizedBox(height: 10),
+                    SizedBox(
+                      width: 50,
+                      height: 50,
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(Color(0xFF2E7D32)),
+                        strokeWidth: 3,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                     Text(
                       'Analyzing image...',
-                      style: TextStyle(color: Color.fromARGB(255, 202, 98, 66)),
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[700],
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
-                )
-              else if (_description != null)
-                Container(
-                  padding: const EdgeInsets.all(16.0),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius: BorderRadius.circular(10),
+                ),
+
+              // Results Section
+              if (_description != null && !_isLoading)
+                Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Text(
-                    _description!,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'Noto',
-                        color: Color.fromARGB(255, 202, 98, 66)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.medical_services,
+                              color: Color(0xFF2E7D32),
+                              size: 24,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Analysis Results',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF2E7D32),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.grey[200]!,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            _description!,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.grey[800],
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Empty State
+              if (_description == null && !_isLoading)
+                Padding(
+                  padding: const EdgeInsets.only(top: 40),
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.description,
+                        size: 64,
+                        color: Colors.grey[300],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Upload an image to get AI analysis',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Color(0xFF2E7D32),
+        foregroundColor: Colors.white,
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        elevation: 2,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 8),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w500,
+              fontSize: 15,
+            ),
+          ),
+        ],
       ),
     );
   }
