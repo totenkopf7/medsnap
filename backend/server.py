@@ -85,7 +85,8 @@ def analyze_image():
                 'anthropic-version': '2023-06-01',
             },
             json={
-                'model': 'claude-3-opus-20240229',
+                'model': 'claude-3-haiku-20240307',
+
                 'max_tokens': 1024,
                 'messages': [
                     {
@@ -128,6 +129,6 @@ def analyze_image():
 
 if __name__ == '__main__':
     print("Server starting...")
-    print(f"Test the server at: http://{LOCAL_IP}:3000/test")
+    print(f"Test the server at: http://{LOCAL_IP}:5000/test")
     print("Make sure to run Flutter web app on port 8000")
-    app.run(host='0.0.0.0', port=3000, debug=True) 
+    app.run(host='0.0.0.0', port=5000, debug=True) 
