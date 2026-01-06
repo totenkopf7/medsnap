@@ -5,141 +5,61 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class ClaudeService {
-  // Use the local IP address for web development
-  final String _baseUrl = kIsWeb
-      // ? 'https://api.medsnap.help/analyze' //AWS-EC2-IP
-      // : 'https://api.anthropic.com/v1/messages';
-      ? 'http://192.168.100.2:5000/analyze'
-      : 'http://192.168.100.2:5000/analyze';
+  // Use your Render.com URL for production
+  final String _baseUrl = 'https://medsnap-7gvx.onrender.com/analyze';
 
   Future<String> analyzeImage(dynamic image) async {
     String base64Image;
     try {
       print('Starting image conversion to base64');
 
+      // Convert image to base64 (same for both web and mobile)
       if (kIsWeb) {
         // Handle web image
         final XFile webImage = image;
         final bytes = await webImage.readAsBytes();
         base64Image = base64Encode(bytes);
-        print('Web image converted to base64, length: ${base64Image.length}');
-
-        // Send to local server
-        print('Sending request to local server at $_baseUrl');
-        final response = await http
-            .post(
-          Uri.parse(_baseUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({'image': base64Image}),
-        )
-            .timeout(
-          const Duration(seconds: 30),
-          onTimeout: () {
-            throw Exception('Request timed out');
-          },
-        );
-
-        print(
-            'Received response from server, status code: ${response.statusCode}');
-        print('Response body: ${response.body}');
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['description'] != null) {
-            return data['description'];
-          }
-          throw Exception('No description in response: ${response.body}');
-        }
-        throw Exception(
-            'Failed to analyze image: ${response.statusCode} - ${response.body}');
       } else {
         // Handle mobile image
         final io.File mobileImage = image;
         final bytes = await mobileImage.readAsBytes();
         base64Image = base64Encode(bytes);
-        print(
-            'Mobile image converted to base64, length: ${base64Image.length}');
+      }
 
-        // Send directly to Anthropic API
-        print('Sending request to Anthropic API');
-        final response = await http.post(
-          Uri.parse(_baseUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key':
-                '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',
-            'anthropic-version': '2023-06-01',
-          },
-          body: jsonEncode({
-            'model': 'claude-3-opus-20240229',
-            'max_tokens': 1024,
-            'messages': [
-              {
-                'role': 'user',
-                'content': [
-                  {
-                    'type': 'image',
-                    'source': {
-                      'type': 'base64',
-                      'media_type': 'image/jpeg',
-                      'data': base64Image,
-                    }
-                  },
-                  {
-                    'type': 'text',
-                    'text': """أنت طبيب ذو خبرة عالية.
+      print('Image converted to base64, length: ${base64Image.length}');
 
-يُسمح لك بالرد باللغة العربية فقط. لا تستخدم أي لغة أخرى.
+      // Send to your Flask server on Render.com
+      print('Sending request to server at $_baseUrl');
 
-التعليمات:
+      final response = await http
+          .post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'image': base64Image}),
+      )
+          .timeout(
+        const Duration(seconds: 60), // Increased timeout for Render.com
+        onTimeout: () {
+          throw Exception('Request timed out after 60 seconds');
+        },
+      );
 
-١) عند إرسال المستخدم صورة دواء:
+      print('Received response, status code: ${response.statusCode}');
 
-حدد اسم الدواء والمكونات الفعالة فيه
-
-اشرح استخداماته وفوائده وطريقة تناوله (الجرعة)
-
-أشر إلى التفاعلات السلبية مع أدوية أخرى
-
-استخدم لغة واضحة وبسيطة للمستخدمين غير الطبيين
-
-لا تذكر الآثار الجانبية.
-
-٢) عند إرسال المستخدم نتيجة فحص طبي:
-
-اقرأ النتائج وفسرها بوضوح
-
-وضح معنى الأرقام وإذا كان هناك شيء غير طبيعي، اشرح السبب المحتمل
-
-قدم نصائح عملية وبسيطة (ماذا يجب أن يفعل ومتى يجب مراجعة الطبيب)
-
-أكد أن هذا ليس بديلاً عن التشخيص الطبي الحقيقي
-
-أسلوب الرد:
-
-ودود
-
-واضح وبسيط
-
-خالٍ من المصطلحات الطبية المعقدة
-"""
-                  }
-                ],
-              }
-            ]
-          }),
-        );
-
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          if (data['content'] != null && data['content'].isNotEmpty) {
-            return data['content'][0]['text'];
-          }
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['description'] != null) {
+          print('Successfully received analysis');
+          return data['description'];
         }
-        throw Exception('Failed to analyze image: ${response.statusCode}');
+        throw Exception('No description in response: ${response.body}');
+      } else {
+        print('Server error: ${response.statusCode} - ${response.body}');
+        throw Exception(
+            'Failed to analyze image: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
       print('Error in analyzeImage: $e');
