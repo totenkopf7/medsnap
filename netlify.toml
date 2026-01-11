@@ -1,0 +1,12 @@
+[build.environment]
+  FLUTTER_VERSION = "3.19.5"  # Use the version you need
+
+[[plugins]]
+  package = "netlify-plugin-flutter"
+  [plugins.inputs]
+    channel = "stable"
+
+[build]
+  command = "flutter pub get && flutter build web --release"
+  publish = "build/web"
+  functions = "functions"  # Only if you're using Netlify functions
