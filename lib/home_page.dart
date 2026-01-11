@@ -249,6 +249,16 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
+              const SizedBox(height: 40),
+              Text(
+                'Developed by Zinar Mizury',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w400,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
