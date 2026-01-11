@@ -5,31 +5,53 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 
 class ClaudeService {
-  // Use your Render.com URL for production
-  final String _baseUrl = 'https://medsnap-7gvx.onrender.com/analyze';
+  // Production URL - your Render.com backend
+  static const String _productionUrl =
+      'https://medsnap-7gvx.onrender.com/analyze';
+
+  // Local development URL
+  static const String _localUrl = 'http://localhost:5000/analyze';
+
+  String get _baseUrl {
+    // For production builds, always use production URL
+    if (const bool.fromEnvironment('dart.vm.product')) {
+      return _productionUrl;
+    }
+
+    // For development, use localhost on web
+    if (kIsWeb) {
+      // Check if we're on localhost for development
+      final host = Uri.base.host;
+      if (host == 'localhost' || host == '127.0.0.1') {
+        return _localUrl;
+      }
+      // If not localhost, use production
+      return _productionUrl;
+    } else {
+      // For mobile apps, you might want different logic
+      // For now, use production
+      return _productionUrl;
+    }
+  }
 
   Future<String> analyzeImage(dynamic image) async {
     String base64Image;
     try {
       print('Starting image conversion to base64');
 
-      // Convert image to base64 (same for both web and mobile)
+      // Convert image to base64
       if (kIsWeb) {
-        // Handle web image
         final XFile webImage = image;
         final bytes = await webImage.readAsBytes();
         base64Image = base64Encode(bytes);
       } else {
-        // Handle mobile image
         final io.File mobileImage = image;
         final bytes = await mobileImage.readAsBytes();
         base64Image = base64Encode(bytes);
       }
 
       print('Image converted to base64, length: ${base64Image.length}');
-
-      // Send to your Flask server on Render.com
-      print('Sending request to server at $_baseUrl');
+      print('Sending request to: $_baseUrl');
 
       final response = await http
           .post(
@@ -41,7 +63,7 @@ class ClaudeService {
         body: jsonEncode({'image': base64Image}),
       )
           .timeout(
-        const Duration(seconds: 60), // Increased timeout for Render.com
+        const Duration(seconds: 60),
         onTimeout: () {
           throw Exception('Request timed out after 60 seconds');
         },
