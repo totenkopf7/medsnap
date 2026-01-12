@@ -33,7 +33,28 @@
   <link rel="manifest" href="manifest.json">
 
   <script>
-       themeColorMeta.content = '#63CFF1';
+        document.addEventListener('DOMContentLoaded', function() {
+      // For Android/Chrome
+      let themeColorMeta = document.querySelector('meta[name="theme-color"]');
+      if (!themeColorMeta) {
+        themeColorMeta = document.createElement('meta');
+        themeColorMeta.name = 'theme-color';
+        document.head.appendChild(themeColorMeta);
+      }
+
+      //This changes the top of the screen color
+      themeColorMeta.content = '#63CFF1';
+      
+      // For iOS
+      let appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+      if (!appleMeta) {
+        appleMeta = document.createElement('meta');
+        appleMeta.name = 'apple-mobile-web-app-status-bar-style';
+        document.head.appendChild(appleMeta);
+      }
+      appleMeta.content = 'black'; // Use 'black' for black bar with white icons
+      
+       
     // The value below is injected by flutter build, do not touch.
     const serviceWorkerVersion = null;
   </script>
