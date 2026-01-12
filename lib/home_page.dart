@@ -393,7 +393,7 @@ class _HomePageState extends State<HomePage> {
             if (_isLoading) _loadingSection(),
             if (_description != null && !_isLoading) _resultSection(),
             if (_description == null && !_isLoading) _emptyState(),
-            const SizedBox(height: 40),
+            const SizedBox(height: 80),
             const Text(
               'Developed by Zinar Mizury',
               style: TextStyle(fontSize: 12),
@@ -554,7 +554,7 @@ class _HomePageState extends State<HomePage> {
       children: const [
         Icon(Icons.search, size: 56, color: neutralColor),
         SizedBox(height: 12),
-        Text('Upload an image to start analysis'),
+        Text('Upload a clear image to start analysis'),
       ],
     );
   }
