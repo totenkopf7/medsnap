@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:med_snap/splash_screen.dart';
 import 'home_page.dart';
 
 void main() {
@@ -12,8 +13,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Medical Snap',
-      home: HomePage(),
+      title: 'Any Scan',
+      home: SplashScreen(),
     );
   }
 }

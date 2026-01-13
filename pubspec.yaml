@@ -29,6 +29,7 @@ flutter:
   uses-material-design: true
   assets:
     - lib/assets/fonts/  # optional if only used for fonts
+    - assets/images/
 
   fonts:
     - family: KurdiFont

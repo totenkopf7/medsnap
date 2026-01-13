@@ -393,11 +393,6 @@ class _HomePageState extends State<HomePage> {
             if (_isLoading) _loadingSection(),
             if (_description != null && !_isLoading) _resultSection(),
             if (_description == null && !_isLoading) _emptyState(),
-            const SizedBox(height: 80),
-            const Text(
-              'Developed by Zinar Mizury',
-              style: TextStyle(fontSize: 12),
-            ),
           ],
         ),
       ),
