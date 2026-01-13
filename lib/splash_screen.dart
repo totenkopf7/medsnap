@@ -65,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 );
               },
               child: Text(
-                'Any Scan',
+                'Med Snap',
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.bold,
