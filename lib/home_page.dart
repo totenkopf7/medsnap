@@ -376,7 +376,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: primaryColor,
         centerTitle: true,
         title: const Text(
-          'Any Scan',
+          'Med Snap',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
       ),
