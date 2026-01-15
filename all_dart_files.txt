@@ -1,0 +1,927 @@
+claude_service.dart:
+// --------------------------------------------------
+// import 'dart:io' as io;
+// import 'dart:convert';
+// import 'package:flutter/foundation.dart' show kIsWeb;
+// import 'package:http/http.dart' as http;
+// import 'package:image_picker/image_picker.dart';
+
+// class ClaudeService {
+//   // Production URL - your Render.com backend
+//   static const String _productionUrl =
+//       'https://medsnap-7gvx.onrender.com/analyze';
+
+//   // Local development URL
+//   static const String _localUrl = 'http://localhost:5000/analyze';
+
+//   String get _baseUrl {
+//     // For production builds, always use production URL
+//     if (const bool.fromEnvironment('dart.vm.product')) {
+//       return _productionUrl;
+//     }
+
+//     // For development, use localhost on web
+//     if (kIsWeb) {
+//       // Check if we're on localhost for development
+//       final host = Uri.base.host;
+//       if (host == 'localhost' || host == '127.0.0.1') {
+//         return _localUrl;
+//       }
+//       // If not localhost, use production
+//       return _productionUrl;
+//     } else {
+//       // For mobile apps, you might want different logic
+//       // For now, use production
+//       return _productionUrl;
+//     }
+//   }
+
+//   Future<String> analyzeImage(dynamic image) async {
+//     String base64Image;
+//     try {
+//       print('Starting image conversion to base64');
+
+//       // Convert image to base64
+//       if (kIsWeb) {
+//         final XFile webImage = image;
+//         final bytes = await webImage.readAsBytes();
+//         base64Image = base64Encode(bytes);
+//       } else {
+//         final io.File mobileImage = image;
+//         final bytes = await mobileImage.readAsBytes();
+//         base64Image = base64Encode(bytes);
+//       }
+
+//       print('Image converted to base64, length: ${base64Image.length}');
+//       print('Sending request to: $_baseUrl');
+
+//       final response = await http
+//           .post(
+//         Uri.parse(_baseUrl),
+//         headers: {
+//           'Content-Type': 'application/json',
+//           'Accept': 'application/json',
+//         },
+//         body: jsonEncode({'image': base64Image}),
+//       )
+//           .timeout(
+//         const Duration(seconds: 60),
+//         onTimeout: () {
+//           throw Exception('Request timed out after 60 seconds');
+//         },
+//       );
+
+//       print('Received response, status code: ${response.statusCode}');
+
+//       if (response.statusCode == 200) {
+//         final data = jsonDecode(response.body);
+//         if (data['description'] != null) {
+//           print('Successfully received analysis');
+//           return data['description'];
+//         }
+//         throw Exception('No description in response: ${response.body}');
+//       } else {
+//         print('Server error: ${response.statusCode} - ${response.body}');
+//         throw Exception(
+//             'Failed to analyze image: ${response.statusCode} - ${response.body}');
+//       }
+//     } catch (e) {
+//       print('Error in analyzeImage: $e');
+//       rethrow;
+//     }
+//   }
+// }
+
+import 'dart:io' as io;
+import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
+
+class ClaudeService {
+  // Production URL
+  static const String _productionUrl =
+      'https://medsnap-7gvx.onrender.com/analyze';
+  static const String _localUrl = 'http://localhost:5000/analyze';
+
+  String get _baseUrl {
+    if (const bool.fromEnvironment('dart.vm.product')) {
+      return _productionUrl;
+    }
+
+    if (kIsWeb) {
+      final host = Uri.base.host;
+      if (host == 'localhost' || host == '127.0.0.1') {
+        return _localUrl;
+      }
+      return _productionUrl;
+    } else {
+      return _productionUrl;
+    }
+  }
+
+  // Language mapping
+  static const Map<String, String> _languageCodes = {
+    'English': 'en',
+    'Arabic': 'ar',
+    'Kurdish': 'ku',
+  };
+
+  Future<String> analyzeImage(dynamic image,
+      {String language = 'English'}) async {
+    String base64Image;
+    try {
+      print('Starting image conversion to base64');
+
+      // Convert image to base64
+      if (kIsWeb) {
+        final XFile webImage = image;
+        final bytes = await webImage.readAsBytes();
+        base64Image = base64Encode(bytes);
+      } else {
+        final io.File mobileImage = image;
+        final bytes = await mobileImage.readAsBytes();
+        base64Image = base64Encode(bytes);
+      }
+
+      print('Image converted to base64, length: ${base64Image.length}');
+      print('Selected language: $language');
+      print('Sending request to: $_baseUrl');
+
+      final response = await http
+          .post(
+        Uri.parse(_baseUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'image': base64Image,
+          'language': _languageCodes[language] ?? 'en', // Send language code
+        }),
+      )
+          .timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          throw Exception('Request timed out after 60 seconds');
+        },
+      );
+
+      print('Received response, status code: ${response.statusCode}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        if (data['description'] != null) {
+          print('Successfully received analysis');
+          return data['description'];
+        }
+        throw Exception('No description in response: ${response.body}');
+      } else {
+        print('Server error: ${response.statusCode} - ${response.body}');
+        throw Exception(
+            'Failed to analyze image: ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('Error in analyzeImage: $e');
+      rethrow;
+    }
+  }
+}
+
+
+home_page.dart:
+// --------------------------------------------------
+// import 'dart:io';
+// import 'package:flutter/foundation.dart' show kIsWeb;
+// import 'package:flutter/material.dart';
+// import 'package:image_picker/image_picker.dart';
+// import 'claude_service.dart';
+
+// class HomePage extends StatefulWidget {
+//   const HomePage({super.key});
+
+//   @override
+//   State<HomePage> createState() => _HomePageState();
+// }
+
+// class _HomePageState extends State<HomePage> {
+//   dynamic _image;
+//   String? _description;
+//   bool _isLoading = false;
+//   final _picker = ImagePicker();
+
+//   Future<void> _pickImage(ImageSource source) async {
+//     try {
+//       final pickedFile = await _picker.pickImage(
+//         source: source,
+//         maxHeight: 1080,
+//         maxWidth: 1920,
+//         imageQuality: 85,
+//         preferredCameraDevice: CameraDevice.rear,
+//       );
+//       if (pickedFile != null) {
+//         setState(() {
+//           _image = kIsWeb ? pickedFile : File(pickedFile.path);
+//           _isLoading = true;
+//         });
+//         await _analyzeImage();
+//       }
+//     } catch (e) {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text('Error: $e')),
+//       );
+//     }
+//   }
+
+//   Future<void> _analyzeImage() async {
+//     if (_image == null) return;
+//     try {
+//       final description = await ClaudeService().analyzeImage(_image);
+//       setState(() {
+//         _description = description;
+//         _isLoading = false;
+//       });
+//     } catch (e) {
+//       setState(() {
+//         _isLoading = false;
+//       });
+//       ScaffoldMessenger.of(context).showSnackBar(
+//         SnackBar(content: Text('Error: $e')),
+//       );
+//     }
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: Colors.white,
+//       appBar: AppBar(
+//         title: const Text(
+//           'AnyScan',
+//           style: TextStyle(
+//             fontWeight: FontWeight.w600,
+//             color: Colors.white,
+//           ),
+//         ),
+//         centerTitle: true,
+//         backgroundColor: Color(0xFF2E7D32), // Professional medical green
+//         elevation: 0,
+//       ),
+//       body: SingleChildScrollView(
+//         child: Padding(
+//           padding: const EdgeInsets.all(20.0),
+//           child: Column(
+//             children: [
+//               // Image Preview Card
+//               Card(
+//                 elevation: 4,
+//                 shape: RoundedRectangleBorder(
+//                   borderRadius: BorderRadius.circular(16),
+//                 ),
+//                 child: Container(
+//                   width: double.infinity,
+//                   height: 300,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(16),
+//                     color: Colors.grey[50],
+//                   ),
+//                   child: _image != null
+//                       ? ClipRRect(
+//                           borderRadius: BorderRadius.circular(16),
+//                           child: kIsWeb
+//                               ? Image.network(_image.path, fit: BoxFit.cover)
+//                               : Image.file(_image, fit: BoxFit.cover),
+//                         )
+//                       : Center(
+//                           child: Column(
+//                             mainAxisAlignment: MainAxisAlignment.center,
+//                             children: [
+//                               Icon(
+//                                 Icons.camera_alt,
+//                                 size: 64,
+//                                 color: Colors.grey[400],
+//                               ),
+//                               const SizedBox(height: 16),
+//                               Text(
+//                                 'No image selected',
+//                                 style: TextStyle(
+//                                   fontSize: 18,
+//                                   color: Colors.grey[600],
+//                                 ),
+//                               ),
+//                             ],
+//                           ),
+//                         ),
+//                 ),
+//               ),
+
+//               const SizedBox(height: 24),
+
+//               // Action Buttons
+//               Row(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   _buildActionButton(
+//                     icon: Icons.camera_alt,
+//                     label: 'Camera',
+//                     onPressed: () => _pickImage(ImageSource.camera),
+//                   ),
+//                   const SizedBox(width: 16),
+//                   _buildActionButton(
+//                     icon: Icons.photo_library,
+//                     label: 'Gallery',
+//                     onPressed: () => _pickImage(ImageSource.gallery),
+//                   ),
+//                 ],
+//               ),
+
+//               const SizedBox(height: 32),
+
+//               // Loading Indicator
+//               if (_isLoading)
+//                 Column(
+//                   children: [
+//                     SizedBox(
+//                       width: 50,
+//                       height: 50,
+//                       child: CircularProgressIndicator(
+//                         valueColor: AlwaysStoppedAnimation(Color(0xFF2E7D32)),
+//                         strokeWidth: 3,
+//                       ),
+//                     ),
+//                     const SizedBox(height: 16),
+//                     Text(
+//                       'Analyzing image...',
+//                       style: TextStyle(
+//                         fontSize: 16,
+//                         color: Colors.grey[700],
+//                         fontWeight: FontWeight.w500,
+//                       ),
+//                     ),
+//                   ],
+//                 ),
+
+//               // Results Section
+//               if (_description != null && !_isLoading)
+//                 Card(
+//                   elevation: 4,
+//                   shape: RoundedRectangleBorder(
+//                     borderRadius: BorderRadius.circular(16),
+//                   ),
+//                   child: Padding(
+//                     padding: const EdgeInsets.all(24.0),
+//                     child: Column(
+//                       crossAxisAlignment: CrossAxisAlignment.start,
+//                       children: [
+//                         Row(
+//                           children: [
+//                             Icon(
+//                               Icons.medical_services,
+//                               color: Color(0xFF2E7D32),
+//                               size: 24,
+//                             ),
+//                             const SizedBox(width: 8),
+//                             Text(
+//                               'Analysis Results',
+//                               style: TextStyle(
+//                                 fontSize: 18,
+//                                 fontWeight: FontWeight.w600,
+//                                 color: Color(0xFF2E7D32),
+//                               ),
+//                             ),
+//                           ],
+//                         ),
+//                         const SizedBox(height: 16),
+//                         Container(
+//                           width: double.infinity,
+//                           padding: const EdgeInsets.all(16),
+//                           decoration: BoxDecoration(
+//                             color: Colors.grey[50],
+//                             borderRadius: BorderRadius.circular(12),
+//                             border: Border.all(
+//                               color: Colors.grey[200]!,
+//                               width: 1,
+//                             ),
+//                           ),
+//                           child: Text(
+//                             _description!,
+//                             style: TextStyle(
+//                               fontSize: 15,
+//                               color: Colors.grey[800],
+//                               height: 1.5,
+//                             ),
+//                           ),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+
+//               // Empty State
+//               if (_description == null && !_isLoading)
+//                 Padding(
+//                   padding: const EdgeInsets.only(top: 40),
+//                   child: Column(
+//                     children: [
+//                       Icon(
+//                         Icons.description,
+//                         size: 64,
+//                         color: Colors.grey[300],
+//                       ),
+//                       const SizedBox(height: 16),
+//                       Text(
+//                         'Upload an image to get AI analysis',
+//                         style: TextStyle(
+//                           fontSize: 16,
+//                           color: Colors.grey[600],
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               const SizedBox(height: 40),
+//               Text(
+//                 'Developed by Zinar Mizury',
+//                 style: TextStyle(
+//                   fontSize: 12,
+//                   color: Colors.grey,
+//                   fontWeight: FontWeight.w400,
+//                 ),
+//                 textAlign: TextAlign.center,
+//               ),
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildActionButton({
+//     required IconData icon,
+//     required String label,
+//     required VoidCallback onPressed,
+//   }) {
+//     return ElevatedButton(
+//       onPressed: onPressed,
+//       style: ElevatedButton.styleFrom(
+//         backgroundColor: Color(0xFF2E7D32),
+//         foregroundColor: Colors.white,
+//         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(12),
+//         ),
+//         elevation: 2,
+//       ),
+//       child: Row(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Icon(icon, size: 20),
+//           const SizedBox(width: 8),
+//           Text(
+//             label,
+//             style: const TextStyle(
+//               fontWeight: FontWeight.w500,
+//               fontSize: 15,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'claude_service.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  dynamic _image;
+  String? _description;
+  bool _isLoading = false;
+  String _selectedCategory = 'medicine';
+
+  final _picker = ImagePicker();
+  String _selectedLanguage = 'Kurdish';
+  final List<String> _languages = ['English', 'Arabic', 'Kurdish'];
+
+  static const Color primaryColor = Color(0xFF63CFF1);
+  static const Color neutralColor = Color(0xFFCDD3D9);
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final pickedFile = await _picker.pickImage(
+        source: source,
+        maxHeight: 1080,
+        maxWidth: 1920,
+        imageQuality: 85,
+        preferredCameraDevice: CameraDevice.rear,
+      );
+
+      if (pickedFile != null) {
+        setState(() {
+          _image = kIsWeb ? pickedFile : File(pickedFile.path);
+          _isLoading = true;
+          _description = null;
+        });
+        await _analyzeImage();
+      }
+    } catch (e) {
+      _isLoading = false;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<void> _analyzeImage() async {
+    try {
+      final description = await ClaudeService()
+          .analyzeImage(_image, language: _selectedLanguage);
+      setState(() {
+        _description = description;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() => _isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: primaryColor,
+        centerTitle: true,
+        title: const Text(
+          'Med Snap',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            _languageSelector(),
+            const SizedBox(height: 20),
+            _imagePreview(),
+            const SizedBox(height: 24),
+            _actionButtons(),
+            const SizedBox(height: 32),
+            if (_isLoading) _loadingSection(),
+            if (_description != null && !_isLoading) _resultSection(),
+            if (_description == null && !_isLoading) _emptyState(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ---------------- UI SECTIONS ----------------
+
+  Widget _languageSelector() {
+    // Add this to your state class variables
+
+// Add this to your UI where you have the language selection
+    DropdownButtonFormField<String>(
+      value: _selectedCategory,
+      decoration: InputDecoration(
+        labelText: 'Category',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        DropdownMenuItem(value: 'medicine', child: Text('Medicine')),
+        DropdownMenuItem(value: 'industrial', child: Text('Industrial')),
+        DropdownMenuItem(value: 'person', child: Text('Person')),
+        DropdownMenuItem(value: 'environment', child: Text('Environment')),
+        DropdownMenuItem(value: 'safety', child: Text('Safety')),
+        DropdownMenuItem(value: 'objects', child: Text('Objects')),
+        DropdownMenuItem(value: 'food', child: Text('Food')),
+        DropdownMenuItem(value: 'general', child: Text('General')),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedCategory = value ?? 'medicine';
+        });
+      },
+    );
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: neutralColor),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.language, color: primaryColor),
+          const SizedBox(width: 12),
+          const Text(
+            'Language',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+          ),
+          const Spacer(),
+          DropdownButton<String>(
+            value: _selectedLanguage,
+            underline: const SizedBox(),
+            icon: const Icon(Icons.keyboard_arrow_down),
+            onChanged: (value) {
+              setState(() => _selectedLanguage = value!);
+            },
+            items: _languages
+                .map(
+                  (lang) => DropdownMenuItem(
+                    value: lang,
+                    child: Text(lang),
+                  ),
+                )
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _imagePreview() {
+    return Container(
+      height: 280,
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: neutralColor),
+      ),
+      child: _image != null
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: kIsWeb
+                  ? Image.network(_image.path, fit: BoxFit.cover)
+                  : Image.file(_image, fit: BoxFit.cover),
+            )
+          : Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.image, size: 60, color: neutralColor),
+                SizedBox(height: 12),
+                Text('No image selected'),
+              ],
+            ),
+    );
+  }
+
+  Widget _actionButtons() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _primaryButton(
+          icon: Icons.camera_alt,
+          label: 'Camera',
+          onPressed: () => _pickImage(ImageSource.camera),
+        ),
+        const SizedBox(width: 16),
+        _primaryButton(
+          icon: Icons.photo_library,
+          label: 'Gallery',
+          onPressed: () => _pickImage(ImageSource.gallery),
+        ),
+      ],
+    );
+  }
+
+  Widget _primaryButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return ElevatedButton.icon(
+      onPressed: onPressed,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+      ),
+      icon: Icon(icon),
+      label: Text(label),
+    );
+  }
+
+  Widget _loadingSection() {
+    return Column(
+      children: const [
+        SizedBox(
+          height: 40,
+          width: 40,
+          child: CircularProgressIndicator(color: primaryColor),
+        ),
+        SizedBox(height: 16),
+        Text('Analyzing image...'),
+      ],
+    );
+  }
+
+  Widget _resultSection() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: neutralColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Analysis Result',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            _description!,
+            style: const TextStyle(height: 1.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Column(
+      children: const [
+        Icon(Icons.search, size: 56, color: neutralColor),
+        SizedBox(height: 12),
+        Text('Upload a clear image to start analysis'),
+      ],
+    );
+  }
+}
+
+
+main.dart:
+// --------------------------------------------------
+import 'package:flutter/material.dart';
+import 'package:med_snap/splash_screen.dart';
+import 'home_page.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Medical Snap',
+      home: SplashScreen(),
+    );
+  }
+}
+//vercel
+
+splash_screen.dart:
+// --------------------------------------------------
+import 'package:flutter/material.dart';
+import 'package:med_snap/home_page.dart';
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Navigate to home page after 4 seconds
+    Future.delayed(const Duration(seconds: 4), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => HomePage()),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated logo container
+            Container(
+              width: 150,
+              height: 150,
+              decoration: BoxDecoration(
+                color: Color(0xFF63CFF1),
+                borderRadius: BorderRadius.circular(40),
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0xFF63CFF1).withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 5,
+                  ),
+                ],
+              ),
+              child: Image.asset(
+                'assets/images/medicine.png',
+                width: 60,
+                height: 60,
+                fit: BoxFit.contain,
+              ),
+            ),
+            SizedBox(height: 30),
+            // App name with fade-in animation
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: Duration(seconds: 1),
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: Transform.translate(
+                    offset: Offset(0, 20 * (1 - value)),
+                    child: child,
+                  ),
+                );
+              },
+              child: Text(
+                'Med Snap',
+                style: TextStyle(
+                  fontSize: 42,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF63CFF1),
+                  letterSpacing: 1.5,
+                ),
+              ),
+            ),
+            SizedBox(height: 10),
+            // Tagline
+            TweenAnimationBuilder<double>(
+              tween: Tween(begin: 0.0, end: 1.0),
+              duration: Duration(milliseconds: 1500),
+              builder: (context, value, child) {
+                return Opacity(
+                  opacity: value,
+                  child: child,
+                );
+              },
+              child: Text(
+                //  'Smart Medicine Analysis',
+                'AI-Powered Analysis',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+            SizedBox(height: 40),
+            // Loading indicator
+            CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF63CFF1)),
+              strokeWidth: 2,
+            ),
+          ],
+        ),
+      ),
+      // Developer credit at bottom
+      bottomNavigationBar: Container(
+        height: 50,
+        child: Center(
+          child: Text(
+            'Developed by Zinar Mizury',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey[500],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+

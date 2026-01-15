@@ -33,11 +33,11 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: Color(0xFF63CFF1),
+                color: Color(0xFF2E7D32),
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF63CFF1).withOpacity(0.3),
+                    color: Color(0xFF2E7D32).withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
@@ -45,8 +45,8 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
               child: Image.asset(
                 'assets/images/medicine.png',
-                width: 80,
-                height: 80,
+                width: 60,
+                height: 60,
                 fit: BoxFit.contain,
               ),
             ),
@@ -65,11 +65,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 );
               },
               child: Text(
-                'Med Snap',
+                'AnyScan',
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF63CFF1),
+                  color: Color(0xFF2E7D32),
                   letterSpacing: 1.5,
                 ),
               ),
@@ -86,8 +86,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 );
               },
               child: Text(
-                //  'Smart Medicine Analysis',
-                'AI-Powered Analysis',
+                'Multi-Category AI Analysis',
                 style: TextStyle(
                   fontSize: 16,
                   color: Colors.grey[600],
@@ -98,7 +97,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 40),
             // Loading indicator
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF63CFF1)),
+              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
               strokeWidth: 2,
             ),
           ],
