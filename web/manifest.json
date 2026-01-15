@@ -1,11 +1,11 @@
 {
-  "name": "Medical Snap",
-  "short_name": "MedSnap",
+  "name": "Any Scan",
+  "short_name": "AnyScan",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#63CFF1",
   "theme_color": "#63CFF1",
-  "description": "AI-powered medicine analysis app",
+  "description": "AI-powered analysis app",
   "orientation": "portrait",
   "prefer_related_applications": false,
   "icons": [

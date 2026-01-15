@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:med_snap/home_page.dart';
+import 'package:med_snap/theme/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.neutralColor,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -33,18 +34,18 @@ class _SplashScreenState extends State<SplashScreen> {
               width: 150,
               height: 150,
               decoration: BoxDecoration(
-                color: Color(0xFF2E7D32),
+                color: AppColors.primaryColor,
                 borderRadius: BorderRadius.circular(40),
                 boxShadow: [
                   BoxShadow(
-                    color: Color(0xFF2E7D32).withOpacity(0.3),
+                    color: AppColors.primaryColor.withOpacity(0.3),
                     blurRadius: 20,
                     spreadRadius: 5,
                   ),
                 ],
               ),
               child: Image.asset(
-                'assets/images/medicine.png',
+                'assets/images/splash.png',
                 width: 60,
                 height: 60,
                 fit: BoxFit.contain,
@@ -69,7 +70,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 style: TextStyle(
                   fontSize: 42,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2E7D32),
+                  color: AppColors.primaryColor,
                   letterSpacing: 1.5,
                 ),
               ),
@@ -97,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
             SizedBox(height: 40),
             // Loading indicator
             CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF2E7D32)),
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primaryColor),
               strokeWidth: 2,
             ),
           ],

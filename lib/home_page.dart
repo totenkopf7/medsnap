@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'claude_service.dart';
+import 'theme/app_colors.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -30,11 +31,6 @@ class _HomePageState extends State<HomePage> {
     'Food',
     'General'
   ];
-
-  static const Color primaryColor = Color(0xFF2E7D32);
-  static const Color secondaryColor = Color(0xFF63CFF1);
-  static const Color accentColor = Color(0xFF4CAF50);
-  static const Color neutralColor = Color(0xFFCDD3D9);
 
   Future<void> _pickImage(ImageSource source) async {
     try {
@@ -96,7 +92,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         centerTitle: true,
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primaryColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -117,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.category, color: primaryColor),
+                          Icon(Icons.category, color: AppColors.primaryColor),
                           SizedBox(width: 8),
                           Text(
                             'Select Category',
@@ -137,15 +133,15 @@ class _HomePageState extends State<HomePage> {
                               horizontal: 16, vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: neutralColor),
+                            borderSide: BorderSide(color: AppColors.neutralColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: neutralColor),
+                            borderSide: BorderSide(color: AppColors.neutralColor),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: primaryColor),
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
                         ),
                         items: _categories
@@ -180,7 +176,7 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Row(
                         children: [
-                          Icon(Icons.language, color: primaryColor),
+                          Icon(Icons.language, color: AppColors.primaryColor),
                           SizedBox(width: 8),
                           Text(
                             'Select Language',
@@ -200,15 +196,15 @@ class _HomePageState extends State<HomePage> {
                               horizontal: 16, vertical: 12),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: neutralColor),
+                            borderSide: BorderSide(color: AppColors.neutralColor),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: neutralColor),
+                            borderSide: BorderSide(color: AppColors.neutralColor),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: primaryColor),
+                            borderSide: BorderSide(color: AppColors.primaryColor),
                           ),
                         ),
                         items: _languages
@@ -303,7 +299,7 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                       height: 50,
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(primaryColor),
+                        valueColor: AlwaysStoppedAnimation(AppColors.primaryColor),
                         strokeWidth: 3,
                       ),
                     ),
@@ -351,7 +347,7 @@ class _HomePageState extends State<HomePage> {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
-                                    color: primaryColor,
+                                    color: AppColors.primaryColor,
                                   ),
                                 ),
                               ],
@@ -360,14 +356,14 @@ class _HomePageState extends State<HomePage> {
                               padding: EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 4),
                               decoration: BoxDecoration(
-                                color: primaryColor.withOpacity(0.1),
+                                color: AppColors.primaryColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 '$_selectedCategory • $_selectedLanguage',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: primaryColor,
+                                  color: AppColors.primaryColor,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -456,7 +452,7 @@ class _HomePageState extends State<HomePage> {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: primaryColor,
+        backgroundColor: AppColors.primaryColor,
         foregroundColor: Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         shape: RoundedRectangleBorder(
@@ -484,21 +480,21 @@ class _HomePageState extends State<HomePage> {
   Icon _getCategoryIcon(String category) {
     switch (category) {
       case 'Medicine':
-        return Icon(Icons.medical_services, color: primaryColor);
+        return Icon(Icons.medical_services, color: AppColors.primaryColor);
       case 'Industrial':
-        return Icon(Icons.factory, color: primaryColor);
+        return Icon(Icons.factory, color: AppColors.primaryColor);
       case 'Person':
-        return Icon(Icons.person, color: primaryColor);
+        return Icon(Icons.person, color: AppColors.primaryColor);
       case 'Environment':
-        return Icon(Icons.nature, color: primaryColor);
+        return Icon(Icons.nature, color: AppColors.primaryColor);
       case 'Safety':
-        return Icon(Icons.security, color: primaryColor);
+        return Icon(Icons.security, color: AppColors.primaryColor);
       case 'Objects':
-        return Icon(Icons.category, color: primaryColor);
+        return Icon(Icons.category, color: AppColors.primaryColor);
       case 'Food':
-        return Icon(Icons.restaurant, color: primaryColor);
+        return Icon(Icons.restaurant, color: AppColors.primaryColor);
       default:
-        return Icon(Icons.analytics, color: primaryColor);
+        return Icon(Icons.analytics, color: AppColors.primaryColor);
     }
   }
 }
