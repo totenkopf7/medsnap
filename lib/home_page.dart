@@ -32,6 +32,16 @@ class _HomePageState extends State<HomePage> {
     'General'
   ];
 
+  void refresh() {
+    setState(() {
+      _image = null;
+      _description = null;
+      _isLoading = false;
+      _selectedCategory = 'Medicine';
+      _selectedLanguage = 'Kurdish';
+    });
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     try {
       final pickedFile = await _picker.pickImage(
@@ -85,7 +95,7 @@ class _HomePageState extends State<HomePage> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          'AnyScan',
+          'Any Scan',
           style: TextStyle(
             fontWeight: FontWeight.w600,
             color: Colors.white,
@@ -94,138 +104,29 @@ class _HomePageState extends State<HomePage> {
         centerTitle: true,
         backgroundColor: AppColors.primaryColor,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: refresh,
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
             children: [
-              // Category Selection Card
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.category, color: AppColors.primaryColor),
-                          SizedBox(width: 8),
-                          Text(
-                            'Select Category',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: _selectedCategory,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.neutralColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.neutralColor),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.primaryColor),
-                          ),
-                        ),
-                        items: _categories
-                            .map((category) => DropdownMenuItem(
-                                  value: category,
-                                  child: Text(category),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedCategory = value ?? 'Medicine';
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+              Row(
+                children: [
+                  // Category Selection Card
+                  Expanded(child: _buildCategoryCard()),
+
+                  SizedBox(width: 16),
+                  // Language Selection Card
+                  Expanded(child: _buildLanguageCard()),
+                ],
               ),
-
-              SizedBox(height: 16),
-
-              // Language Selection Card
-              Card(
-                elevation: 3,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.language, color: AppColors.primaryColor),
-                          SizedBox(width: 8),
-                          Text(
-                            'Select Language',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 12),
-                      DropdownButtonFormField<String>(
-                        value: _selectedLanguage,
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.neutralColor),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.neutralColor),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(color: AppColors.primaryColor),
-                          ),
-                        ),
-                        items: _languages
-                            .map((language) => DropdownMenuItem(
-                                  value: language,
-                                  child: Text(language),
-                                ))
-                            .toList(),
-                        onChanged: (value) {
-                          setState(() {
-                            _selectedLanguage = value ?? 'Kurdish';
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              SizedBox(height: 24),
-
               // Image Preview Card
               Card(
                 elevation: 4,
@@ -289,7 +190,7 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 28),
 
               // Loading Indicator
               if (_isLoading)
@@ -299,7 +200,8 @@ class _HomePageState extends State<HomePage> {
                       width: 50,
                       height: 50,
                       child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation(AppColors.primaryColor),
+                        valueColor:
+                            AlwaysStoppedAnimation(AppColors.primaryColor),
                         strokeWidth: 3,
                       ),
                     ),
@@ -316,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                     Text(
                       'Category: $_selectedCategory • Language: $_selectedLanguage',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 10,
                         color: Colors.grey[600],
                       ),
                     ),
@@ -362,7 +264,7 @@ class _HomePageState extends State<HomePage> {
                               child: Text(
                                 '$_selectedCategory • $_selectedLanguage',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 10,
                                   color: AppColors.primaryColor,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -427,15 +329,18 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                 ),
-              const SizedBox(height: 40),
-              Text(
-                'Developed by Zinar Mizury',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontWeight: FontWeight.w400,
+              const SizedBox(height: 44),
+              const Padding(
+                padding: EdgeInsets.all(12.0),
+                child: Text(
+                  'Developed by Zinar Mizury',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
-                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -473,6 +378,133 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryCard() {
+    return // Category Selection Card
+        Card(
+      color: Colors.white,
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.category, color: AppColors.primaryColor),
+                SizedBox(width: 8),
+                Text(
+                  'Select Category',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedCategory,
+              decoration: InputDecoration(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.neutralColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.neutralColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primaryColor),
+                ),
+              ),
+              items: _categories
+                  .map((category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedCategory = value ?? 'Medicine';
+                });
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLanguageCard() {
+    return Card(
+      color: Colors.white,
+      elevation: 3,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(15.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.language, color: AppColors.primaryColor),
+                SizedBox(width: 8),
+                Text(
+                  'Select Language',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.grey[800],
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedLanguage,
+              decoration: InputDecoration(
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.neutralColor),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.neutralColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.primaryColor),
+                ),
+              ),
+              items: _languages
+                  .map((language) => DropdownMenuItem(
+                        value: language,
+                        child: Text(language),
+                      ))
+                  .toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedLanguage = value ?? 'Kurdish';
+                });
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
