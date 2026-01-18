@@ -1,3 +1,4 @@
+// --------------------------------------------------
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -19,6 +20,12 @@ class _HomePageState extends State<HomePage> {
   String _selectedCategory = 'Medicine';
   final _picker = ImagePicker();
   String _selectedLanguage = 'Kurdish';
+  // ==== CHANGE START: Add variables for text animation and scrolling ====
+  String _displayedText = '';
+  bool _isAnimatingText = false;
+  int _textAnimationIndex = 0;
+  final ScrollController _scrollController = ScrollController();
+  // ==== CHANGE END ====
 
   final List<String> _languages = ['English', 'Arabic', 'Kurdish'];
   final List<String> _categories = [
@@ -32,6 +39,14 @@ class _HomePageState extends State<HomePage> {
     'General'
   ];
 
+  @override
+  void dispose() {
+    // ==== CHANGE START: Dispose scroll controller ====
+    _scrollController.dispose();
+    // ==== CHANGE END ====
+    super.dispose();
+  }
+
   void refresh() {
     setState(() {
       _image = null;
@@ -39,6 +54,11 @@ class _HomePageState extends State<HomePage> {
       _isLoading = false;
       _selectedCategory = 'Medicine';
       _selectedLanguage = 'Kurdish';
+      // ==== CHANGE START: Reset animation variables ====
+      _displayedText = '';
+      _isAnimatingText = false;
+      _textAnimationIndex = 0;
+      // ==== CHANGE END ====
     });
   }
 
@@ -57,6 +77,11 @@ class _HomePageState extends State<HomePage> {
           _image = kIsWeb ? pickedFile : File(pickedFile.path);
           _isLoading = true;
           _description = null;
+          // ==== CHANGE START: Reset animation variables ====
+          _displayedText = '';
+          _isAnimatingText = false;
+          _textAnimationIndex = 0;
+          // ==== CHANGE END ====
         });
         await _analyzeImage();
       }
@@ -80,6 +105,12 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _description = description;
         _isLoading = false;
+        // ==== CHANGE START: Start text animation ====
+        _displayedText = '';
+        _isAnimatingText = true;
+        _textAnimationIndex = 0;
+        _startTextAnimation(description);
+        // ==== CHANGE END ====
       });
     } catch (e) {
       setState(() => _isLoading = false);
@@ -88,6 +119,46 @@ class _HomePageState extends State<HomePage> {
       );
     }
   }
+
+  // ==== CHANGE START: Updated text animation method with auto-scroll ====
+  void _startTextAnimation(String fullText) {
+    if (fullText.isEmpty) {
+      _isAnimatingText = false;
+      return;
+    }
+
+    _textAnimationIndex = 0;
+    _displayedText = '';
+
+    Future.doWhile(() async {
+      if (_textAnimationIndex < fullText.length && _isAnimatingText) {
+        await Future.delayed(
+            const Duration(milliseconds: 10)); // Adjust speed here
+
+        setState(() {
+          _displayedText = fullText.substring(0, _textAnimationIndex + 1);
+          _textAnimationIndex++;
+        });
+
+        // Auto-scroll to bottom as text grows
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (_scrollController.hasClients) {
+            _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent,
+              duration: const Duration(milliseconds: 100),
+              curve: Curves.easeOut,
+            );
+          }
+        });
+
+        return true;
+      } else {
+        _isAnimatingText = false;
+        return false;
+      }
+    });
+  }
+  // ==== CHANGE END ====
 
   @override
   Widget build(BuildContext context) {
@@ -112,7 +183,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: // ==== CHANGE START: Wrap with SingleChildScrollView and controller ====
+          SingleChildScrollView(
+        controller: _scrollController,
         child: Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -222,6 +295,20 @@ class _HomePageState extends State<HomePage> {
                         color: Colors.grey[600],
                       ),
                     ),
+                    // ==== CHANGE START: Show translation info ====
+                    if (_selectedLanguage != 'English')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8.0),
+                        child: Text(
+                          'AI analyzing in English, will translate to $_selectedLanguage',
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[500],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    // ==== CHANGE END ====
                   ],
                 ),
 
@@ -261,13 +348,26 @@ class _HomePageState extends State<HomePage> {
                                 color: AppColors.primaryColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Text(
-                                '$_selectedCategory • $_selectedLanguage',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppColors.primaryColor,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                              child: Column(
+                                children: [
+                                  Text(
+                                    _selectedCategory,
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.primaryColor,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Text(
+                                    _selectedLanguage,
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      color: AppColors.primaryColor
+                                          .withOpacity(0.8),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -284,15 +384,52 @@ class _HomePageState extends State<HomePage> {
                               width: 1,
                             ),
                           ),
-                          child: Text(
-                            _description!,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey[800],
-                              height: 1.5,
+                          child: // ==== CHANGE START: Use animated text widget ====
+                              _isAnimatingText
+                                  ? SelectableText.rich(
+                                      TextSpan(
+                                        text: _displayedText,
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          color: Colors.grey[800],
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                    )
+                                  : SelectableText(
+                                      _description!,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[800],
+                                        height: 1.5,
+                                      ),
+                                    ),
+                          // ==== CHANGE END ====
+                        ),
+                        // ==== CHANGE START: Show animation status ====
+                        if (_isAnimatingText)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Icon(
+                                  Icons.animation,
+                                  size: 12,
+                                  color: Colors.grey[500],
+                                ),
+                                SizedBox(width: 4),
+                                Text(
+                                  'Animating... ${((_textAnimationIndex / (_description?.length ?? 1)) * 100).toStringAsFixed(0)}%',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                        // ==== CHANGE END ====
                       ],
                     ),
                   ),
@@ -326,6 +463,20 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.grey[500],
                         ),
                       ),
+                      // ==== CHANGE START: Show translation info ====
+                      if (_selectedLanguage != 'English')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text(
+                            'AI will analyze in English for better accuracy',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[400],
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ),
+                      // ==== CHANGE END ====
                     ],
                   ),
                 ),
@@ -346,6 +497,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      // ==== CHANGE END ====
     );
   }
 
@@ -503,6 +655,19 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
+            // ==== CHANGE START: Add language info ====
+            SizedBox(height: 8),
+            Text(
+              _selectedLanguage == 'English'
+                  ? 'AI analyzes in English'
+                  : 'AI analyzes in English, translates to $_selectedLanguage',
+              style: TextStyle(
+                fontSize: 10,
+                color: Colors.grey[600],
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            // ==== CHANGE END ====
           ],
         ),
       ),
