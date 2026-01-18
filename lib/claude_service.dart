@@ -103,6 +103,11 @@ class ClaudeService {
         // Check if we have translated description
         if (data['translated_description'] != null) {
           print('Successfully received translated description for $language');
+          // ==== CHANGE START: Add RTL info log ====
+          if (data['is_rtl'] == true) {
+            print('Text is RTL (right-to-left)');
+          }
+          // ==== CHANGE END ====
           return data['translated_description'];
         }
 

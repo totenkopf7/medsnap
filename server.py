@@ -58,6 +58,14 @@ def translate_text(text, target_language):
             if translated_parts:
                 translated_text = ' '.join(translated_parts)
                 print(f"Translation successful: {len(translated_text)} chars to {target_language} ({target_lang_code})")
+                
+                # ==== CHANGE START: Add RTL mark for Arabic and Kurdish ====
+                if target_language in ['ar', 'ku']:
+                    # Add Right-to-Left Mark (U+200F) at the beginning for better RTL rendering
+                    translated_text = '\u200F' + translated_text
+                    print(f"Added RTL mark for {target_language}")
+                # ==== CHANGE END ====
+                
                 return translated_text
             else:
                 print("Translation returned empty result")
@@ -227,7 +235,8 @@ def analyze_image():
                 'success': True,
                 'language': language,
                 'category': category,
-                'translated_description': None
+                'translated_description': None,
+                'is_rtl': False  # ==== CHANGE START: Add RTL flag ====
             }
             
             # Always translate if needed
@@ -236,7 +245,11 @@ def analyze_image():
                 translated_text = translate_text(response_text, original_language)
                 if translated_text:
                     result['translated_description'] = translated_text
-                    print(f"Translation successful, length: {len(translated_text)}")
+                    # ==== CHANGE START: Set RTL flag for Arabic and Kurdish ====
+                    if original_language in ['ar', 'ku']:
+                        result['is_rtl'] = True
+                    # ==== CHANGE END ====
+                    print(f"Translation successful, length: {len(translated_text)}, RTL: {result['is_rtl']}")
                 else:
                     print("Translation failed, keeping English description")
                     # If translation fails, still return English description
@@ -273,9 +286,9 @@ def get_languages():
     """Endpoint to get supported languages"""
     return jsonify({
         'supported_languages': [
-            {'code': 'en', 'name': 'English'},
-            {'code': 'ar', 'name': 'Arabic'},
-            {'code': 'ku', 'name': 'Kurdish (Sorani)'}
+            {'code': 'en', 'name': 'English (LTR)'},
+            {'code': 'ar', 'name': 'Arabic (RTL)'},
+            {'code': 'ku', 'name': 'Kurdish - Sorani (RTL)'}
         ]
     })
 
@@ -287,9 +300,10 @@ def test_endpoint():
         'service': 'AnyScan AI Analysis',
         'translation_supported': True,
         'translation_services': {
-            'ar': 'Arabic',
-            'ku': 'Sorani Kurdish (ckb code)'
+            'ar': 'Arabic (RTL)',
+            'ku': 'Sorani Kurdish (RTL, ckb code)'
         },
+        'rtl_languages': ['ar', 'ku'],
         'categories': ['medicine', 'industrial', 'person', 'environment', 'safety', 'objects', 'food', 'general']
     })
 
@@ -297,7 +311,8 @@ if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"\nAnyScan Server starting on port {port}")
     print(f"Supported categories: Medicine, Industrial, Person, Environment, Safety, Objects, Food, General")
-    print(f"Supported languages: English (AI), Arabic (translated), Sorani Kurdish (translated)")
+    print(f"Supported languages: English (LTR), Arabic (RTL), Sorani Kurdish (RTL)")
+    print(f"RTL languages: Arabic, Kurdish")
     print(f"Translation uses ckb code for Sorani Kurdish")
     print(f"Server ready to process requests...")
     app.run(host='0.0.0.0', port=port)

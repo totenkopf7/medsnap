@@ -161,17 +161,9 @@ class _HomePageState extends State<HomePage> {
   }
   // ==== CHANGE END ====
 
-  // ==== CHANGE START: Add method to scroll to results ====
-  void _scrollToResults() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_resultsKey.currentContext != null) {
-        Scrollable.ensureVisible(
-          _resultsKey.currentContext!,
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      }
-    });
+  // ==== CHANGE START: Helper method to check if language is RTL ====
+  bool get _isRTLlanguage {
+    return _selectedLanguage == 'Arabic' || _selectedLanguage == 'Kurdish';
   }
   // ==== CHANGE END ====
 
@@ -314,13 +306,28 @@ class _HomePageState extends State<HomePage> {
                     if (_selectedLanguage != 'English')
                       Padding(
                         padding: const EdgeInsets.only(top: 8.0),
-                        child: Text(
-                          'AI analyzing in English, will translate to $_selectedLanguage',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey[500],
-                            fontStyle: FontStyle.italic,
-                          ),
+                        child: Column(
+                          children: [
+                            Text(
+                              'AI analyzing in English, will translate to $_selectedLanguage',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.grey[500],
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            // ==== CHANGE START: Show RTL info ====
+                            if (_isRTLlanguage)
+                              Text(
+                                'Text will display right-to-left (RTL)',
+                                style: TextStyle(
+                                  fontSize: 9,
+                                  color: Colors.grey[400],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            // ==== CHANGE END ====
+                          ],
                         ),
                       ),
                     // ==== CHANGE END ====
@@ -403,47 +410,75 @@ class _HomePageState extends State<HomePage> {
                                 width: 1,
                               ),
                             ),
-                            child: // ==== CHANGE START: Use animated text widget ====
-                                _isAnimatingText
-                                    ? SelectableText.rich(
-                                        TextSpan(
-                                          text: _displayedText,
-                                          style: TextStyle(
-                                            fontSize: 15,
-                                            color: Colors.grey[800],
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      )
-                                    : SelectableText(
-                                        _description!,
+                            child: // ==== CHANGE START: Use Directionality for RTL support ====
+                                Directionality(
+                              textDirection: _isRTLlanguage
+                                  ? TextDirection.rtl
+                                  : TextDirection.ltr,
+                              child: _isAnimatingText
+                                  ? SelectableText.rich(
+                                      TextSpan(
+                                        text: _displayedText,
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: Colors.grey[800],
                                           height: 1.5,
                                         ),
                                       ),
+                                    )
+                                  : SelectableText(
+                                      _description!,
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        color: Colors.grey[800],
+                                        height: 1.5,
+                                      ),
+                                    ),
+                            ),
                             // ==== CHANGE END ====
                           ),
-                          // ==== CHANGE START: Show animation status ====
+                          // ==== CHANGE START: Show animation status with RTL info ====
                           if (_isAnimatingText)
                             Padding(
                               padding: const EdgeInsets.only(top: 8.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.end,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Icon(
-                                    Icons.animation,
-                                    size: 12,
-                                    color: Colors.grey[500],
-                                  ),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Animating... ${((_textAnimationIndex / (_description?.length ?? 1)) * 100).toStringAsFixed(0)}%',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.grey[500],
+                                  if (_isRTLlanguage)
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.format_textdirection_r_to_l,
+                                          size: 12,
+                                          color: Colors.grey[500],
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'RTL Text',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: Colors.grey[500],
+                                          ),
+                                        ),
+                                      ],
                                     ),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.animation,
+                                        size: 12,
+                                        color: Colors.grey[500],
+                                      ),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        'Animating... ${((_textAnimationIndex / (_description?.length ?? 1)) * 100).toStringAsFixed(0)}%',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),
@@ -484,21 +519,34 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.grey[500],
                         ),
                       ),
-                      // ==== CHANGE START: Show translation info ====
-                      // if (_selectedLanguage != 'English')
-                      //   Padding(
-                      //     padding: const EdgeInsets.only(top: 4.0),
-                      //     child: Text(
-                      //       _selectedLanguage == 'Kurdish'
-                      //           ? 'AI will analyze in English and translate to Sorani Kurdish'
-                      //           : 'AI will analyze in English for better accuracy',
-                      //       style: TextStyle(
-                      //         fontSize: 12,
-                      //         color: Colors.grey[400],
-                      //         fontStyle: FontStyle.italic,
-                      //       ),
-                      //     ),
-                      //   ),
+                      // ==== CHANGE START: Show translation info with RTL info ====
+                      if (_selectedLanguage != 'English')
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Column(
+                            children: [
+                              Text(
+                                _selectedLanguage == 'Kurdish'
+                                    ? 'AI will analyze in English and translate to Sorani Kurdish'
+                                    : 'AI will analyze in English for better accuracy',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[400],
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              if (_isRTLlanguage)
+                                Text(
+                                  'Text will display right-to-left (RTL)',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: Colors.grey[400],
+                                    fontStyle: FontStyle.italic,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
                       // ==== CHANGE END ====
                     ],
                   ),
@@ -678,20 +726,35 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
-            // ==== CHANGE START: Add language info with Sorani Kurdish note ====
-            // SizedBox(height: 8),
-            // Text(
-            //   _selectedLanguage == 'English'
-            //       ? 'AI analyzes in English'
-            //       : _selectedLanguage == 'Kurdish'
-            //           ? 'AI analyzes in English, translates to Sorani Kurdish'
-            //           : 'AI analyzes in English, translates to $_selectedLanguage',
-            //   style: TextStyle(
-            //     fontSize: 10,
-            //     color: Colors.grey[600],
-            //     fontStyle: FontStyle.italic,
-            //   ),
-            // ),
+            // ==== CHANGE START: Add language info with Sorani Kurdish and RTL note ====
+            SizedBox(height: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _selectedLanguage == 'English'
+                      ? 'AI analyzes in English'
+                      : _selectedLanguage == 'Kurdish'
+                          ? 'AI analyzes in English, translates to Sorani Kurdish'
+                          : 'AI analyzes in English, translates to $_selectedLanguage',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                if (_selectedLanguage == 'Arabic' ||
+                    _selectedLanguage == 'Kurdish')
+                  Text(
+                    'Text will display right-to-left (RTL)',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+              ],
+            ),
             // ==== CHANGE END ====
           ],
         ),
