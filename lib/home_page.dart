@@ -520,38 +520,38 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       // ==== CHANGE START: Show translation info with RTL info ====
-                      if (_selectedLanguage != 'English')
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: Column(
-                            children: [
-                              Text(
-                                _selectedLanguage == 'Kurdish'
-                                    ? 'AI will analyze in English and translate to Sorani Kurdish'
-                                    : 'AI will analyze in English for better accuracy',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[400],
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                              if (_isRTLlanguage)
-                                Text(
-                                  'Text will display right-to-left (RTL)',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: Colors.grey[400],
-                                    fontStyle: FontStyle.italic,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
+                      // if (_selectedLanguage != 'English')
+                      //   Padding(
+                      //     padding: const EdgeInsets.only(top: 4.0),
+                      //     child: Column(
+                      //       children: [
+                      //         Text(
+                      //           _selectedLanguage == 'Kurdish'
+                      //               ? 'AI will analyze in English and translate to Sorani Kurdish'
+                      //               : 'AI will analyze in English for better accuracy',
+                      //           style: TextStyle(
+                      //             fontSize: 12,
+                      //             color: Colors.grey[400],
+                      //             fontStyle: FontStyle.italic,
+                      //           ),
+                      //         ),
+                      //         if (_isRTLlanguage)
+                      //           Text(
+                      //             'Text will display right-to-left (RTL)',
+                      //             style: TextStyle(
+                      //               fontSize: 11,
+                      //               color: Colors.grey[400],
+                      //               fontStyle: FontStyle.italic,
+                      //             ),
+                      //           ),
+                      //       ],
+                      //     ),
+                      //   ),
                       // ==== CHANGE END ====
                     ],
                   ),
                 ),
-              const SizedBox(height: 44),
+              const SizedBox(height: 50),
               const Padding(
                 padding: EdgeInsets.all(12.0),
                 child: Text(
@@ -728,33 +728,33 @@ class _HomePageState extends State<HomePage> {
             ),
             // ==== CHANGE START: Add language info with Sorani Kurdish and RTL note ====
             SizedBox(height: 8),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _selectedLanguage == 'English'
-                      ? 'AI analyzes in English'
-                      : _selectedLanguage == 'Kurdish'
-                          ? 'AI analyzes in English, translates to Sorani Kurdish'
-                          : 'AI analyzes in English, translates to $_selectedLanguage',
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: Colors.grey[600],
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-                if (_selectedLanguage == 'Arabic' ||
-                    _selectedLanguage == 'Kurdish')
-                  Text(
-                    'Text will display right-to-left (RTL)',
-                    style: TextStyle(
-                      fontSize: 9,
-                      color: Colors.grey[500],
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-              ],
-            ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.start,
+            //   children: [
+            //     Text(
+            //       _selectedLanguage == 'English'
+            //           ? 'AI analyzes in English'
+            //           : _selectedLanguage == 'Kurdish'
+            //               ? 'AI analyzes in English, translates to Sorani Kurdish'
+            //               : 'AI analyzes in English, translates to $_selectedLanguage',
+            //       style: TextStyle(
+            //         fontSize: 10,
+            //         color: Colors.grey[600],
+            //         fontStyle: FontStyle.italic,
+            //       ),
+            //     ),
+            //     if (_selectedLanguage == 'Arabic' ||
+            //         _selectedLanguage == 'Kurdish')
+            //       Text(
+            //         'Text will display right-to-left (RTL)',
+            //         style: TextStyle(
+            //           fontSize: 9,
+            //           color: Colors.grey[500],
+            //           fontStyle: FontStyle.italic,
+            //         ),
+            //       ),
+            //   ],
+            // ),
             // ==== CHANGE END ====
           ],
         ),
