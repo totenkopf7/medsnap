@@ -26,10 +26,10 @@ def translate_text(text, target_language):
         # Google Translate API endpoint
         url = "https://translate.googleapis.com/translate_a/single"
         
-        # Map language codes for translation
+        # Map language codes for translation with Sorani Kurdish
         language_map = {
             'ar': 'ar',  # Arabic
-            'ku': 'ku',  # Kurdish (Sorani/Kurmanji)
+            'ku': 'ckb', # Sorani Kurdish (Central Kurdish) code
             'en': 'en'   # English
         }
         
@@ -57,7 +57,7 @@ def translate_text(text, target_language):
             
             if translated_parts:
                 translated_text = ' '.join(translated_parts)
-                print(f"Translation successful: {len(translated_text)} chars to {target_language}")
+                print(f"Translation successful: {len(translated_text)} chars to {target_language} ({target_lang_code})")
                 return translated_text
             else:
                 print("Translation returned empty result")
@@ -185,15 +185,13 @@ def analyze_image():
         
         print(f"Processing request - Category: {category}, Language: {language}, Needs translation: {needs_translation}, Original language: {original_language}")
         
-        # ==== CHANGE START: Always use English for AI analysis ====
-        # Get appropriate prompt for the category
+        # Always use English for AI analysis
         prompt = get_prompt_for_category(category)
         
         # Add image analysis instruction
         prompt += "\n\nAnalyze the uploaded image according to the above rules and provide a professional analysis."
         
         print(f"Using prompt for category: {category}")
-        # ==== CHANGE END ====
         
         # Call Anthropic API
         message = client.messages.create(
@@ -232,7 +230,7 @@ def analyze_image():
                 'translated_description': None
             }
             
-            # ==== CHANGE START: Always translate if needed ====
+            # Always translate if needed
             if needs_translation and original_language != 'en':
                 print(f"Translating from English to {original_language}...")
                 translated_text = translate_text(response_text, original_language)
@@ -242,7 +240,6 @@ def analyze_image():
                 else:
                     print("Translation failed, keeping English description")
                     # If translation fails, still return English description
-            # ==== CHANGE END ====
             
             return jsonify(result)
         else:
@@ -278,7 +275,7 @@ def get_languages():
         'supported_languages': [
             {'code': 'en', 'name': 'English'},
             {'code': 'ar', 'name': 'Arabic'},
-            {'code': 'ku', 'name': 'Kurdish'}
+            {'code': 'ku', 'name': 'Kurdish (Sorani)'}
         ]
     })
 
@@ -289,14 +286,18 @@ def test_endpoint():
         'status': 'running',
         'service': 'AnyScan AI Analysis',
         'translation_supported': True,
-        'categories': ['medicine', 'industrial', 'person', 'environment', 'safety', 'objects', 'food', 'general'],
-        'languages': ['en', 'ar', 'ku']
+        'translation_services': {
+            'ar': 'Arabic',
+            'ku': 'Sorani Kurdish (ckb code)'
+        },
+        'categories': ['medicine', 'industrial', 'person', 'environment', 'safety', 'objects', 'food', 'general']
     })
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     print(f"\nAnyScan Server starting on port {port}")
     print(f"Supported categories: Medicine, Industrial, Person, Environment, Safety, Objects, Food, General")
-    print(f"Supported languages: English (AI), with Arabic/Kurdish translation")
+    print(f"Supported languages: English (AI), Arabic (translated), Sorani Kurdish (translated)")
+    print(f"Translation uses ckb code for Sorani Kurdish")
     print(f"Server ready to process requests...")
     app.run(host='0.0.0.0', port=port)

@@ -27,11 +27,11 @@ class ClaudeService {
     }
   }
 
-  // Language mapping
+  // Language mapping - Note: Kurdish = Sorani Kurdish
   static const Map<String, String> _languageCodes = {
     'English': 'en',
     'Arabic': 'ar',
-    'Kurdish': 'ku',
+    'Kurdish': 'ku', // Sorani Kurdish
   };
 
   // Category mapping
@@ -68,7 +68,7 @@ class ClaudeService {
       print('Selected category: $category');
       print('Sending request to: $_baseUrl');
 
-      // ==== CHANGE START: Always use English for AI request, then translate if needed ====
+      // Always use English for AI request, then translate if needed
       final String languageCode = _languageCodes[language] ?? 'en';
       final bool needsTranslation = language != 'English';
 
@@ -118,7 +118,6 @@ class ClaudeService {
         throw Exception(
             'Failed to analyze image: ${response.statusCode} - ${response.body}');
       }
-      // ==== CHANGE END ====
     } catch (e) {
       print('Error in analyzeImage: $e');
       rethrow;

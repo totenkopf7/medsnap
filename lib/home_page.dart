@@ -25,6 +25,7 @@ class _HomePageState extends State<HomePage> {
   bool _isAnimatingText = false;
   int _textAnimationIndex = 0;
   final ScrollController _scrollController = ScrollController();
+  final GlobalKey _resultsKey = GlobalKey();
   // ==== CHANGE END ====
 
   final List<String> _languages = ['English', 'Arabic', 'Kurdish'];
@@ -140,21 +141,35 @@ class _HomePageState extends State<HomePage> {
           _textAnimationIndex++;
         });
 
-        // Auto-scroll to bottom as text grows
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent,
-              duration: const Duration(milliseconds: 100),
-              curve: Curves.easeOut,
-            );
-          }
-        });
+        // Auto-scroll to bottom as text grows - with a small delay to ensure layout
+        await Future.delayed(const Duration(milliseconds: 20));
+
+        if (_scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 50),
+            curve: Curves.easeOut,
+          );
+        }
 
         return true;
       } else {
         _isAnimatingText = false;
         return false;
+      }
+    });
+  }
+  // ==== CHANGE END ====
+
+  // ==== CHANGE START: Add method to scroll to results ====
+  void _scrollToResults() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_resultsKey.currentContext != null) {
+        Scrollable.ensureVisible(
+          _resultsKey.currentContext!,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -314,126 +329,132 @@ class _HomePageState extends State<HomePage> {
 
               // Results Section
               if (_description != null && !_isLoading)
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                _getCategoryIcon(_selectedCategory),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Analysis Results',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: 12, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Column(
+                // ==== CHANGE START: Add key to results section ====
+                KeyedSubtree(
+                  key: _resultsKey,
+                  child: Card(
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
                                 children: [
+                                  _getCategoryIcon(_selectedCategory),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    _selectedCategory,
+                                    'Analysis Results',
                                     style: TextStyle(
-                                      fontSize: 10,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
                                       color: AppColors.primaryColor,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Text(
-                                    _selectedLanguage,
-                                    style: TextStyle(
-                                      fontSize: 9,
-                                      color: AppColors.primaryColor
-                                          .withOpacity(0.8),
-                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey[200]!,
-                              width: 1,
-                            ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color:
+                                      AppColors.primaryColor.withOpacity(0.1),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      _selectedCategory,
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppColors.primaryColor,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Text(
+                                      _selectedLanguage,
+                                      style: TextStyle(
+                                        fontSize: 9,
+                                        color: AppColors.primaryColor
+                                            .withOpacity(0.8),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                          child: // ==== CHANGE START: Use animated text widget ====
-                              _isAnimatingText
-                                  ? SelectableText.rich(
-                                      TextSpan(
-                                        text: _displayedText,
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.grey[200]!,
+                                width: 1,
+                              ),
+                            ),
+                            child: // ==== CHANGE START: Use animated text widget ====
+                                _isAnimatingText
+                                    ? SelectableText.rich(
+                                        TextSpan(
+                                          text: _displayedText,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.grey[800],
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      )
+                                    : SelectableText(
+                                        _description!,
                                         style: TextStyle(
                                           fontSize: 15,
                                           color: Colors.grey[800],
                                           height: 1.5,
                                         ),
                                       ),
-                                    )
-                                  : SelectableText(
-                                      _description!,
-                                      style: TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.grey[800],
-                                        height: 1.5,
-                                      ),
-                                    ),
-                          // ==== CHANGE END ====
-                        ),
-                        // ==== CHANGE START: Show animation status ====
-                        if (_isAnimatingText)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Icon(
-                                  Icons.animation,
-                                  size: 12,
-                                  color: Colors.grey[500],
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  'Animating... ${((_textAnimationIndex / (_description?.length ?? 1)) * 100).toStringAsFixed(0)}%',
-                                  style: TextStyle(
-                                    fontSize: 10,
+                            // ==== CHANGE END ====
+                          ),
+                          // ==== CHANGE START: Show animation status ====
+                          if (_isAnimatingText)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  Icon(
+                                    Icons.animation,
+                                    size: 12,
                                     color: Colors.grey[500],
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Animating... ${((_textAnimationIndex / (_description?.length ?? 1)) * 100).toStringAsFixed(0)}%',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        // ==== CHANGE END ====
-                      ],
+                          // ==== CHANGE END ====
+                        ],
+                      ),
                     ),
                   ),
                 ),
+              // ==== CHANGE END ====
 
               // Empty State
               if (_description == null && !_isLoading)
@@ -468,7 +489,9 @@ class _HomePageState extends State<HomePage> {
                         Padding(
                           padding: const EdgeInsets.only(top: 4.0),
                           child: Text(
-                            'AI will analyze in English for better accuracy',
+                            _selectedLanguage == 'Kurdish'
+                                ? 'AI will analyze in English and translate to Sorani Kurdish'
+                                : 'AI will analyze in English for better accuracy',
                             style: TextStyle(
                               fontSize: 12,
                               color: Colors.grey[400],
@@ -655,12 +678,14 @@ class _HomePageState extends State<HomePage> {
                 });
               },
             ),
-            // ==== CHANGE START: Add language info ====
+            // ==== CHANGE START: Add language info with Sorani Kurdish note ====
             SizedBox(height: 8),
             Text(
               _selectedLanguage == 'English'
                   ? 'AI analyzes in English'
-                  : 'AI analyzes in English, translates to $_selectedLanguage',
+                  : _selectedLanguage == 'Kurdish'
+                      ? 'AI analyzes in English, translates to Sorani Kurdish'
+                      : 'AI analyzes in English, translates to $_selectedLanguage',
               style: TextStyle(
                 fontSize: 10,
                 color: Colors.grey[600],
